@@ -3,8 +3,8 @@
 , makeWrapper
 , python3Packages
 , lib
-
-# optional
+, nix-prefetch-git
+  # optional
 , vimPlugins
 , neovim
 }:
@@ -38,7 +38,7 @@ buildPythonApplication {
     cp ${../../../../../maintainers/scripts/pluginupdate.py} $out/lib/pluginupdate.py
 
     # wrap python scripts
-    makeWrapperArgs+=( --prefix PATH : "${lib.makeBinPath [ nix my_neovim ]}" --prefix PYTHONPATH : "$out/lib" )
+    makeWrapperArgs+=( --prefix PATH : "${lib.makeBinPath [ nix my_neovim nix-prefetch-git ]}" --prefix PYTHONPATH : "$out/lib" )
     wrapPythonPrograms
   '';
 
