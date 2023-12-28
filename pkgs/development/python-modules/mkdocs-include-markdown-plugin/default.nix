@@ -2,6 +2,8 @@
 , buildPythonPackage
 , fetchFromGitHub
 , hatchling
+, mkdocs
+, wcmatch
 }:
 
 buildPythonPackage rec {
@@ -18,7 +20,7 @@ buildPythonPackage rec {
   pyproject = true;
   doCheck = false;
 
-  nativeBuildInputs = [ hatchling ];
+  nativeBuildInputs = [ hatchling mkdocs wcmatch ];
 
   meta = with lib; {
     description = "Mkdocs Markdown includer plugin.";
