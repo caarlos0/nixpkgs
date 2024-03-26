@@ -169,7 +169,28 @@ let
 
   # Watch out for python <> boost compatibility
   python = python310.override {
-    packageOverrides = self: super: let cryptographyOverrideVersion = "40.0.1"; in {
+    packageOverrides = self: super: let
+      cryptographyOverrideVersion = "40.0.1";
+      bcryptOverrideVersion = "4.0.1";
+    in {
+      # Ceph does not support `bcrypt` > 4.0 yet:
+      # * Upstream issue: https://tracker.ceph.com/issues/63529
+      #   > Python Sub-Interpreter Model Used by ceph-mgr Incompatible With Python Modules Based on PyO3
+      bcrypt = super.bcrypt.overridePythonAttrs (old: rec {
+        pname = "bcrypt";
+        version = bcryptOverrideVersion;
+        src = fetchPypi {
+          inherit pname version;
+          hash = "sha256-J9N1kDrIJhz+QEf2cJ0W99GNObHskqr3KvmJVSplDr0=";
+        };
+        cargoRoot = "src/_bcrypt";
+        cargoDeps = rustPlatform.fetchCargoTarball {
+          inherit src;
+          sourceRoot = "${pname}-${version}/${cargoRoot}";
+          name = "${pname}-${version}";
+          hash = "sha256-lDWX69YENZFMu7pyBmavUZaalGvFqbHSHfkwkzmDQaY=";
+        };
+      });
       # Ceph does not support `cryptography` > 40 yet:
       # * https://github.com/NixOS/nixpkgs/pull/281858#issuecomment-1899358602
       # * Upstream issue: https://tracker.ceph.com/issues/63529
@@ -195,7 +216,10 @@ let
           hash = "sha256-gFfDTc2QWBWHBCycVH1dYlCsWQMVcRZfOBIau+njtDU=";
         };
 
-        patches = (old.patches or []) ++ [
+        # Not using the normal `(old.patches or []) ++` pattern here to use
+        # the overridden package's patches, because current nixpkgs's `cryptography`
+        # has patches that do not apply on this old version.
+        patches = [
           # Fix https://nvd.nist.gov/vuln/detail/CVE-2023-49083 which has no upstream backport.
           # See https://github.com/pyca/cryptography/commit/f09c261ca10a31fe41b1262306db7f8f1da0e48a#diff-f5134bf8f3cf0a5cc8601df55e50697acc866c603a38caff98802bd8e17976c5R1893
           ./python-cryptography-Cherry-pick-fix-for-CVE-2023-49083-on-cryptography-40.patch
@@ -215,6 +239,9 @@ let
           inherit version;
           hash = "sha256-hBSYub7GFiOxtsR+u8AjZ8B9YODhlfGXkIF/EMyNsLc=";
         };
+        pytestFlagsArray = [
+          "-W" "ignore::pytest.PytestRemovedIn8Warning"
+        ];
       });
 
       # Ceph does not support `kubernetes` >= 19, see:
@@ -278,10 +305,10 @@ let
   ]);
   inherit (ceph-python-env.python) sitePackages;
 
-  version = "18.2.0";
+  version = "18.2.1";
   src = fetchurl {
     url = "https://download.ceph.com/tarballs/ceph-${version}.tar.gz";
-    hash = "sha256:0k9nl6xi5brva51rr14m7ig27mmmd7vrpchcmqc40q3c2khn6ns9";
+    hash = "sha256-gHWwNHf0KtI7Hv0MwaCqP6A3YR/AWakfUZTktRyddko=";
   };
 in rec {
   ceph = stdenv.mkDerivation {

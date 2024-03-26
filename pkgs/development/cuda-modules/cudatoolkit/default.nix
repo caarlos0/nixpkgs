@@ -2,7 +2,7 @@
   cudaVersion,
   runPatches ? [],
   autoPatchelfHook,
-  autoAddOpenGLRunpathHook,
+  autoAddDriverRunpath,
   addOpenGLRunpath,
   alsa-lib,
   curlMinimal,
@@ -44,6 +44,7 @@
   rdma-core,
   ucx,
   rsync,
+  libglvnd,
 }:
 
 let
@@ -75,7 +76,7 @@ backendStdenv.mkDerivation rec {
       rsync
       addOpenGLRunpath
       autoPatchelfHook
-      autoAddOpenGLRunpathHook
+      autoAddDriverRunpath
       markForCudatoolkitRootHook
     ]
     ++ lib.optionals (lib.versionOlder version "11") [libsForQt5.wrapQtAppsHook]
@@ -123,6 +124,7 @@ backendStdenv.mkDerivation rec {
       unixODBC
       alsa-lib
       wayland
+      libglvnd
     ]
     ++ lib.optionals (lib.versionAtLeast version "11.8") [
       (lib.getLib libtiff)

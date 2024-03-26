@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "atlauncher";
-  version = "3.4.35.4";
+  version = "3.4.35.9";
 
   src = fetchurl {
     url = "https://github.com/ATLauncher/ATLauncher/releases/download/v${finalAttrs.version}/ATLauncher-${finalAttrs.version}.jar";
-    hash = "sha256-M8ygN70yizJM6VEffBh/lH/DneKAzQ5UFzc3g51dja0=";
+    hash = "sha256-Y2MGhzq4IbtjEG+CER+FWU8CY+hn5ehjMOcP02zIsR4=";
   };
 
   env.ICON = fetchurl {
@@ -16,7 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontUnpack = true;
 
-  buildInputs = [ ];
   nativeBuildInputs = [ copyDesktopItems makeWrapper ];
 
   installPhase = ''
@@ -32,29 +31,29 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "--no-launcher-update"
 
     mkdir -p $out/share/icons/hicolor/scalable/apps
-    cp $ICON $out/share/icons/hicolor/scalable/apps/${finalAttrs.pname}.svg
+    cp $ICON $out/share/icons/hicolor/scalable/apps/atlauncher.svg
 
     runHook postInstall
   '';
 
   desktopItems = [
     (makeDesktopItem {
-      name = finalAttrs.pname;
-      exec = finalAttrs.pname;
-      icon = finalAttrs.pname;
-      desktopName = "ATLauncher";
       categories = [ "Game" ];
+      desktopName = "ATLauncher";
+      exec = "atlauncher";
+      icon = "atlauncher";
+      name = "atlauncher";
     })
   ];
 
   meta = with lib; {
     description = "A simple and easy to use Minecraft launcher which contains many different modpacks for you to choose from and play";
     downloadPage = "https://atlauncher.com/downloads";
-    homepage = "https://atlauncher.com/";
+    homepage = "https://atlauncher.com";
     license = licenses.gpl3;
+    mainProgram = "atlauncher";
     maintainers = [ maintainers.getpsyched ];
     platforms = platforms.all;
-    mainProgram = "atlauncher";
     sourceProvenance = [ sourceTypes.binaryBytecode ];
   };
 })

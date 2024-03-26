@@ -6,6 +6,7 @@
 , google-cloud-core
 , google-cloud-testutils
 , grpc-google-iam-v1
+, grpc-interceptor
 , libcst
 , mock
 , proto-plus
@@ -19,14 +20,14 @@
 
 buildPythonPackage rec {
   pname = "google-cloud-spanner";
-  version = "3.41.0";
+  version = "3.44.0";
   pyproject = true;
 
   disabled = pythonOlder "3.7";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-jK2hHdYdxwsEmk/aDp7ArXZwZbhEloqIuLJ2ZwMs9YI=";
+    hash = "sha256-NTzAsG/UVn2BxPwUxE/ZnXqkCA9LwhmDRoq3LdstLIo=";
   };
 
   nativeBuildInputs = [
@@ -38,6 +39,7 @@ buildPythonPackage rec {
     google-api-core
     google-cloud-core
     grpc-google-iam-v1
+    grpc-interceptor
     proto-plus
     protobuf
     sqlparse

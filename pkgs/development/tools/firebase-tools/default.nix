@@ -8,16 +8,16 @@
 
 buildNpmPackage rec {
   pname = "firebase-tools";
-  version = "13.0.3";
+  version = "13.5.2";
 
   src = fetchFromGitHub {
     owner = "firebase";
     repo = "firebase-tools";
     rev = "v${version}";
-    hash = "sha256-kq7ZrTh6cbrVCEW2/APtcdLqn9hCKXIxZmGgvgpfG4U=";
+    hash = "sha256-uHh9schpVs9PNivZkIp8geG60MrEDwrlo58WN3499OM=";
   };
 
-  npmDepsHash = "sha256-VR+fpykY38JekzcBCK99qmiM3veuZ85BtGGTNf7TW5o=";
+  npmDepsHash = "sha256-O3+9qqXbNLVqMP6Grh7p5rHWjOc3stG1e6zBxZSt/5M=";
 
   postPatch = ''
     ln -s npm-shrinkwrap.json package-lock.json

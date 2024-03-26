@@ -8,7 +8,9 @@
 , binutils
 , cairo
 , git
+, hyprcursor
 , hyprland-protocols
+, hyprlang
 , jq
 , libGL
 , libdrm
@@ -21,17 +23,17 @@
 , pciutils
 , systemd
 , tomlplusplus
-, udis86
+, udis86-hyprland
 , wayland
 , wayland-protocols
 , wayland-scanner
-, wlroots
+, wlroots-hyprland
 , xcbutilwm
 , xwayland
 , debug ? false
 , enableXWayland ? true
 , legacyRenderer ? false
-, withSystemd ? true
+, withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd
 , wrapRuntimeDeps ? true
   # deprecated flags
 , nvidiaPatches ? false
@@ -41,15 +43,19 @@
 assert lib.assertMsg (!nvidiaPatches) "The option `nvidiaPatches` has been removed.";
 assert lib.assertMsg (!enableNvidiaPatches) "The option `enableNvidiaPatches` has been removed.";
 assert lib.assertMsg (!hidpiXWayland) "The option `hidpiXWayland` has been removed. Please refer https://wiki.hyprland.org/Configuring/XWayland";
+
+let
+  wlr = wlroots-hyprland.override { inherit enableXWayland; };
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "hyprland" + lib.optionalString debug "-debug";
-  version = "0.34.0";
+  version = "0.37.1";
 
   src = fetchFromGitHub {
     owner = "hyprwm";
     repo = finalAttrs.pname;
     rev = "v${finalAttrs.version}";
-    hash = "sha256-WSrjBI3k2dM/kGF20At0E6NlrJSB4+pE+WGJ6dFzWEs=";
+    hash = "sha256-W+34KhCnqscRXN/IkvuJMiVx0Fa64RcYn8H4sZjzceI=";
   };
 
   patches = [
@@ -67,7 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "@HASH@" '${finalAttrs.src.rev}' \
       --replace "@BRANCH@" "" \
       --replace "@MESSAGE@" "" \
-      --replace "@DATE@" "2024-01-01" \
+      --replace "@DATE@" "2024-03-16" \
       --replace "@TAG@" "" \
       --replace "@DIRTY@" ""
   '';
@@ -91,19 +97,21 @@ stdenv.mkDerivation (finalAttrs: {
     [
       cairo
       git
+      hyprcursor
       hyprland-protocols
+      hyprlang
       libGL
       libdrm
       libinput
       libxkbcommon
       mesa
-      udis86
+      udis86-hyprland
       wayland
       wayland-protocols
       pango
       pciutils
       tomlplusplus
-      wlroots
+      wlr
     ]
     ++ lib.optionals stdenv.hostPlatform.isMusl [ libexecinfo ]
     ++ lib.optionals enableXWayland [ libxcb xcbutilwm xwayland ]
@@ -114,28 +122,30 @@ stdenv.mkDerivation (finalAttrs: {
     then "debug"
     else "release";
 
-  mesonFlags = builtins.concatLists [
-    (lib.optional (!enableXWayland) "-Dxwayland=disabled")
-    (lib.optional legacyRenderer "-DLEGACY_RENDERER:STRING=true")
-    (lib.optional withSystemd "-Dsystemd=enabled")
+  mesonAutoFeatures = "disabled";
+
+  mesonFlags = [
+    (lib.mesonEnable "xwayland" enableXWayland)
+    (lib.mesonEnable "legacy_renderer" legacyRenderer)
+    (lib.mesonEnable "systemd" withSystemd)
   ];
 
   postInstall = ''
-    ln -s ${wlroots}/include/wlr $dev/include/hyprland/wlroots
+    ln -s ${wlr}/include/wlr $dev/include/hyprland/wlroots
     ${lib.optionalString wrapRuntimeDeps ''
       wrapProgram $out/bin/Hyprland \
-        --suffix PATH : ${lib.makeBinPath [binutils pciutils]}
+        --suffix PATH : ${lib.makeBinPath [binutils pciutils stdenv.cc]}
     ''}
   '';
 
   passthru.providedSessions = [ "hyprland" ];
 
   meta = with lib; {
-    homepage = "https://github.com/vaxerski/Hyprland";
+    homepage = "https://github.com/hyprwm/Hyprland";
     description = "A dynamic tiling Wayland compositor that doesn't sacrifice on its looks";
     license = licenses.bsd3;
     maintainers = with maintainers; [ wozeparrot fufexan ];
     mainProgram = "Hyprland";
-    platforms = wlroots.meta.platforms;
+    platforms = wlr.meta.platforms;
   };
 })
