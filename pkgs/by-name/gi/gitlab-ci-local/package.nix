@@ -6,16 +6,16 @@
 
 buildNpmPackage rec {
   pname = "gitlab-ci-local";
-  version = "4.47.0";
+  version = "4.50.1";
 
   src = fetchFromGitHub {
     owner = "firecow";
     repo = "gitlab-ci-local";
     rev = version;
-    hash = "sha256-AMqifAdC4aPra/KfM0Z8L1mF6+lA0dv9tt/cXSd3Ov4=";
+    hash = "sha256-nlxYZY8SntMffmKiDpp/m8GfsB4lp+T8UoUPOLQlcC8=";
   };
 
-  npmDepsHash = "sha256-GVqGA4aMfA08j/+fy+DA6udi52lmfDeAkE59d9CMAqg=";
+  npmDepsHash = "sha256-uDhot9kGmF717itia6hyx0xZkyMYDpH7BmGl12xSJyI=";
 
   postPatch = ''
     # remove cleanup which runs git commands

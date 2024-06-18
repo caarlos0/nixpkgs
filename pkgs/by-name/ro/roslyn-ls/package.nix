@@ -40,6 +40,11 @@ buildDotnetModule rec {
         '>linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>'
   '';
 
+  dotnetFlags = [
+    # this removes the Microsoft.WindowsDesktop.App.Ref dependency
+    "-p:EnableWindowsTargeting=false"
+  ];
+
   # two problems solved here:
   # 1. --no-build removed -> BuildHost project within roslyn is running Build target during publish
   # 2. missing crossgen2 7.* in local nuget directory when PublishReadyToRun=true
@@ -61,7 +66,9 @@ buildDotnetModule rec {
           --configuration Release \
           --no-self-contained \
           --output "$out/lib/$pname" \
-          --runtime ${rid}
+          --runtime ${rid} \
+          ''${dotnetInstallFlags[@]}  \
+          ''${dotnetFlags[@]}
 
       runHook postInstall
     '';
@@ -73,7 +80,7 @@ buildDotnetModule rec {
 
   meta = {
     homepage = "https://github.com/dotnet/vscode-csharp";
-    description = "The language server behind C# Dev Kit for Visual Studio Code";
+    description = "Language server behind C# Dev Kit for Visual Studio Code";
     changelog = "https://github.com/dotnet/vscode-csharp/releases/tag/v${vsVersion}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ konradmalik ];

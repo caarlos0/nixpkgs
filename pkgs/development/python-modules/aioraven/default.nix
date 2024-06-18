@@ -1,18 +1,19 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, pythonOlder
-, iso4217
-, pyserial
-, pyserial-asyncio
-, pytestCheckHook
-, pytest-asyncio
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  pythonOlder,
+  iso4217,
+  pyserial,
+  pyserial-asyncio,
+  pytestCheckHook,
+  pytest-asyncio,
 }:
 
 buildPythonPackage rec {
   pname = "aioraven";
-  version = "0.5.2";
+  version = "0.5.3";
   pyproject = true;
 
   disabled = pythonOlder "3.9";
@@ -21,14 +22,12 @@ buildPythonPackage rec {
     owner = "cottsay";
     repo = "aioraven";
     rev = "refs/tags/${version}";
-    hash = "sha256-ysmIxWy+gufX5oUfQ7Zw5xv0t/yxihFB+eAdYAWAmXs=";
+    hash = "sha256-kGCFwpMaLWxLUp8k5H5AnL21KrwohbUYLswLcLqmc3M=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  build-system = [ setuptools ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     iso4217
     pyserial
     pyserial-asyncio
@@ -39,9 +38,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "aioraven"
-  ];
+  pythonImportsCheck = [ "aioraven" ];
 
   meta = with lib; {
     description = "Module for communication with RAVEn devices";

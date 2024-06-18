@@ -1,28 +1,30 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, fetchpatch
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  fetchpatch,
+  pythonOlder,
 
-# build-system
-, hatchling
-, hatch-fancy-pypi-readme
+  # build-system
+  hatchling,
+  hatch-fancy-pypi-readme,
 
-# native dependencies
-, libxcrypt
+  # native dependencies
+  libxcrypt,
 
-# dependencies
-, annotated-types
-, pydantic-core
-, typing-extensions
+  # dependencies
+  annotated-types,
+  pydantic-core,
+  typing-extensions,
 
-# tests
-, cloudpickle
-, email-validator
-, dirty-equals
-, faker
-, pytestCheckHook
-, pytest-mock
+  # tests
+  cloudpickle,
+  email-validator,
+  dirty-equals,
+  faker,
+  pytestCheckHook,
+  pytest-mock,
+  eval-type-backport,
 }:
 
 buildPythonPackage rec {
@@ -45,12 +47,10 @@ buildPythonPackage rec {
       name = "fix-pytest8-compatibility.patch";
       url = "https://github.com/pydantic/pydantic/commit/825a6920e177a3b65836c13c7f37d82b810ce482.patch";
       hash = "sha256-Dap5DtDzHw0jS/QUo5CRI9sLDJ719GRyC4ZNDWEdzus=";
-     })
+    })
   ];
 
-  buildInputs = lib.optionals (pythonOlder "3.9") [
-    libxcrypt
-  ];
+  buildInputs = lib.optionals (pythonOlder "3.9") [ libxcrypt ];
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -64,18 +64,19 @@ buildPythonPackage rec {
   ];
 
   passthru.optional-dependencies = {
-    email = [
-      email-validator
-    ];
+    email = [ email-validator ];
   };
 
-  nativeCheckInputs = [
-    cloudpickle
-    dirty-equals
-    faker
-    pytest-mock
-    pytestCheckHook
-  ] ++ lib.flatten (lib.attrValues passthru.optional-dependencies);
+  nativeCheckInputs =
+    [
+      cloudpickle
+      dirty-equals
+      faker
+      pytest-mock
+      pytestCheckHook
+    ]
+    ++ lib.flatten (lib.attrValues passthru.optional-dependencies)
+    ++ lib.optionals (pythonOlder "3.10") [ eval-type-backport ];
 
   preCheck = ''
     export HOME=$(mktemp -d)

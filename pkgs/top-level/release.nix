@@ -9,6 +9,7 @@
    $ nix-build pkgs/top-level/release.nix -A coreutils.x86_64-linux
 */
 { nixpkgs ? { outPath = (import ../../lib).cleanSource ../..; revCount = 1234; shortRev = "abcdef"; revision = "0000000000000000000000000000000000000000"; }
+, system ? builtins.currentSystem
 , officialRelease ? false
   # The platform doubles for which we build Nixpkgs.
 , supportedSystems ? [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ]
@@ -54,7 +55,7 @@
 
 let
   release-lib = import ./release-lib.nix {
-    inherit supportedSystems scrubJobs nixpkgsArgs;
+    inherit supportedSystems scrubJobs nixpkgsArgs system;
   };
 
   inherit (release-lib) mapTestOn pkgs;
@@ -78,7 +79,9 @@ let
   ] (arch: elem "${arch}-darwin" supportedSystems);
 
   nonPackageJobs =
-    { tarball = import ./make-tarball.nix { inherit pkgs nixpkgs officialRelease supportedSystems; };
+    { tarball = import ./make-tarball.nix { inherit pkgs nixpkgs officialRelease; };
+
+      release-checks = import ./nixpkgs-basic-release-checks.nix { inherit pkgs nixpkgs supportedSystems; };
 
       metrics = import ./metrics.nix { inherit pkgs nixpkgs; };
 
@@ -91,6 +94,7 @@ let
           meta.description = "Release-critical builds for the Nixpkgs darwin channel";
           constituents =
             [ jobs.tarball
+              jobs.release-checks
               jobs.cabal2nix.x86_64-darwin
               jobs.ghc.x86_64-darwin
               jobs.git.x86_64-darwin
@@ -140,6 +144,7 @@ let
           meta.description = "Release-critical builds for the Nixpkgs unstable channel";
           constituents =
             [ jobs.tarball
+              jobs.release-checks
               jobs.metrics
               jobs.manual
               jobs.lib-tests
@@ -159,6 +164,7 @@ let
               # Ensure that X11/GTK are in order.
               jobs.firefox-unwrapped.x86_64-linux
               jobs.cachix.x86_64-linux
+              jobs.devenv.x86_64-linux
 
               /*
               TODO: re-add tests; context: https://github.com/NixOS/nixpkgs/commit/36587a587ab191eddd868179d63c82cdd5dee21b
@@ -182,6 +188,7 @@ let
               jobs.stdenv.x86_64-darwin
               jobs.cargo.x86_64-darwin
               jobs.cachix.x86_64-darwin
+              jobs.devenv.x86_64-darwin
               jobs.go.x86_64-darwin
               jobs.python3.x86_64-darwin
               jobs.nixpkgs-review.x86_64-darwin
@@ -209,6 +216,7 @@ let
               jobs.stdenv.aarch64-darwin
               jobs.cargo.aarch64-darwin
               jobs.cachix.aarch64-darwin
+              jobs.devenv.aarch64-darwin
               jobs.go.aarch64-darwin
               jobs.python3.aarch64-darwin
               jobs.nixpkgs-review.aarch64-darwin
@@ -234,7 +242,7 @@ let
                 };
               };
             in {
-              inherit (bootstrap) build dist test;
+              inherit (bootstrap) build test;
             }
           else if hasSuffix "-darwin" config then
             let
@@ -243,7 +251,7 @@ let
               };
             in {
               # Lightweight distribution and test
-              inherit (bootstrap) build dist test;
+              inherit (bootstrap) build test;
               # Test a full stdenv bootstrap from the bootstrap tools definition
               # TODO: Re-enable once the new bootstrap-tools are in place.
               #inherit (bootstrap.test-pkgs) stdenv;
@@ -270,6 +278,7 @@ let
         "ghc92"
         "ghc94"
         "ghc96"
+        "ghc98"
       ] (compilerName: {
         inherit (packagePlatforms pkgs.haskell.packages.${compilerName})
           haskell-language-server;

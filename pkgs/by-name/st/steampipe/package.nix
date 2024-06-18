@@ -3,43 +3,61 @@
   fetchFromGitHub,
   installShellFiles,
   lib,
+  makeWrapper,
   nix-update-script,
-  stdenv,
   steampipe,
   testers,
 }:
 
 buildGoModule rec {
   pname = "steampipe";
-  version = "0.22.1";
+  version = "0.23.2";
 
   src = fetchFromGitHub {
     owner = "turbot";
     repo = "steampipe";
-    rev = "v${version}";
-    hash = "sha256-Oz1T9koeXnmHc5oru1apUtmhhvKi/gAtg/Hb7HKkkP0=";
+    rev = "refs/tags/v${version}";
+    hash = "sha256-hMEFIPhtvYkBG+HBtigOzFe8iAKmywWWl1da6sksX7k=";
   };
 
-  vendorHash = "sha256-U0BeGCRLjL56ZmVKcKqrrPTCXpShJzJq5/wnXDKax6g=";
+  vendorHash = "sha256-KY5mVs+YsyHHtV6DvfwwxcF8K9IQWxlxIJeSyFsKkpc=";
   proxyVendor = true;
 
-  patchPhase = ''
-    runHook prePatch
+  postPatch = ''
     # Patch test that relies on looking up homedir in user struct to prefer ~
     substituteInPlace pkg/steampipeconfig/shared_test.go \
-      --replace 'filehelpers "github.com/turbot/go-kit/files"' "" \
-      --replace 'filepaths.SteampipeDir, _ = filehelpers.Tildefy("~/.steampipe")' 'filepaths.SteampipeDir = "~/.steampipe"';
-    runHook postPatch
+      --replace-fail 'filehelpers "github.com/turbot/go-kit/files"' "" \
+      --replace-fail 'filepaths.SteampipeDir, _ = filehelpers.Tildefy("~/.steampipe")' 'filepaths.SteampipeDir = "~/.steampipe"';
   '';
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ];
 
-  ldflags = [ "-s" "-w" ];
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
-  # panic: could not create backups directory: mkdir /var/empty/.steampipe: operation not permitted
-  doCheck = !stdenv.isDarwin;
+  doCheck = true;
+
+  checkFlags =
+    let
+      skippedTests = [
+        # panic: could not create backups directory: mkdir /var/empty/.steampipe: operation not permitted
+        "TestTrimBackups"
+        # Skip tests that require network access
+        "TestIsPortBindable"
+      ];
+    in
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   postInstall = ''
+    wrapProgram $out/bin/steampipe \
+      --set-default STEAMPIPE_UPDATE_CHECK false \
+      --set-default STEAMPIPE_TELEMETRY none
+
     INSTALL_DIR=$(mktemp -d)
     installShellCompletion --cmd steampipe \
       --bash <($out/bin/steampipe --install-dir $INSTALL_DIR completion bash) \
@@ -56,12 +74,12 @@ buildGoModule rec {
     updateScript = nix-update-script { };
   };
 
-  meta = with lib; {
-    homepage = "https://steampipe.io/";
-    description = "select * from cloud;";
-    license = licenses.agpl3Only;
-    mainProgram = "steampipe";
-    maintainers = with maintainers; [ hardselius ];
+  meta = {
     changelog = "https://github.com/turbot/steampipe/blob/v${version}/CHANGELOG.md";
+    description = "Dynamically query your cloud, code, logs & more with SQL";
+    homepage = "https://steampipe.io/";
+    license = lib.licenses.agpl3Only;
+    mainProgram = "steampipe";
+    maintainers = with lib.maintainers; [ hardselius anthonyroussel ];
   };
 }

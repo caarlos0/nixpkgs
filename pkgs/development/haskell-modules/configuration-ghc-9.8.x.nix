@@ -50,46 +50,52 @@ self: super: {
   xhtml = null;
 
   #
-  # HLS
-  # https://haskell-language-server.readthedocs.io/en/latest/support/plugin-support.html
-  #
-  haskell-language-server = super.haskell-language-server.override {
-    hls-class-plugin = null;
-    hls-fourmolu-plugin = null;
-    hls-gadt-plugin = null;
-    hls-hlint-plugin = null;
-    hls-ormolu-plugin = null;
-    hls-refactor-plugin = null;
-    hls-rename-plugin = null;
-    hls-retrie-plugin = null;
-    hls-splice-plugin = null;
-    hls-stylish-haskell-plugin = null;
-  };
-
-  #
   # Version upgrades
   #
-  th-abstraction = doDistribute self.th-abstraction_0_6_0_0;
-  ghc-lib-parser = doDistribute self.ghc-lib-parser_9_8_1_20231121;
-  ghc-lib-parser-ex = doDistribute self.ghc-lib-parser-ex_9_8_0_0;
-  ghc-lib = doDistribute self.ghc-lib_9_8_1_20231121;
+  th-abstraction = doDistribute self.th-abstraction_0_7_0_0;
+  ghc-lib-parser = doDistribute self.ghc-lib-parser_9_8_2_20240223;
+  ghc-lib-parser-ex = doDistribute self.ghc-lib-parser-ex_9_8_0_2;
+  ghc-lib = doDistribute self.ghc-lib_9_8_2_20240223;
   megaparsec = doDistribute self.megaparsec_9_6_1;
-  aeson = doDistribute self.aeson_2_2_1_0;
-  attoparsec-aeson = doDistribute self.attoparsec-aeson_2_2_0_1;
-  ormolu = doDistribute self.ormolu_0_7_3_0;
-  fourmolu = doDistribute (dontCheck self.fourmolu_0_14_1_0);
+  # TODO: remove when aeson updates or launches a revision
+  # see https://github.com/haskell/aeson/issues/1089 and https://github.com/haskell/aeson/pulls/1088
+  aeson = doJailbreak (doDistribute self.aeson_2_2_2_0);
+  attoparsec-aeson = doDistribute self.attoparsec-aeson_2_2_2_0;
   xmonad = doDistribute self.xmonad_0_18_0;
-  hlint = doDistribute self.hlint_3_8;
+  apply-refact = self.apply-refact_0_14_0_0;
+  ormolu = self.ormolu_0_7_4_0;
+  fourmolu = self.fourmolu_0_15_0_0;
+  stylish-haskell = self.stylish-haskell_0_14_6_0;
+  hlint = self.hlint_3_8;
+  ghc-syntax-highlighter = self.ghc-syntax-highlighter_0_0_11_0;
+
+  # A given major version of ghc-exactprint only supports one version of GHC.
+  ghc-exactprint = self.ghc-exactprint_1_8_0_0;
+  ghc-exactprint_1_8_0_0 = addBuildDepends [
+    self.Diff
+    self.HUnit
+    self.data-default
+    self.extra
+    self.free
+    self.ghc-paths
+    self.ordered-containers
+    self.silently
+    self.syb
+  ] super.ghc-exactprint_1_8_0_0;
 
   #
   # Jailbreaks
   #
   blaze-svg = doJailbreak super.blaze-svg; # base <4.19
   commutative-semigroups = doJailbreak super.commutative-semigroups; # base < 4.19
+  dependent-sum-template = doJailbreak super.dependent-sum-template_0_2_0_1; # template-haskell < 2.21
   diagrams-lib = doJailbreak super.diagrams-lib; # base <4.19, text <2.1
   diagrams-postscript = doJailbreak super.diagrams-postscript;  # base <4.19, bytestring <0.12
   diagrams-svg = doJailbreak super.diagrams-svg;  # base <4.19, text <2.1
+  generics-sop = doJailbreak super.generics-sop_0_5_1_4; # th-abstraction >=0.6 && <0.7
   ghc-trace-events = doJailbreak super.ghc-trace-events; # text < 2.1, bytestring < 0.12, base < 4.19
+  hashing = doJailbreak super.hashing; # bytestring <0.12
+  json-sop = doJailbreak super.json-sop; # aeson <2.2, base <4.19, text <2.1
   primitive-unlifted = doJailbreak super.primitive-unlifted; # bytestring < 0.12
   statestack = doJailbreak super.statestack; # base < 4.19
   newtype-generics = doJailbreak super.newtype-generics; # base < 4.19
@@ -98,6 +104,14 @@ self: super: {
   # Too strict bound on base, believe it or not.
   # https://github.com/judah/terminfo/pull/55#issuecomment-1876894232
   terminfo_0_4_1_6 = doJailbreak super.terminfo_0_4_1_6;
+  HaskellNet-SSL = doJailbreak super.HaskellNet-SSL; # bytestring >=0.9 && <0.12
+  raven-haskell = doJailbreak super.raven-haskell; # aeson <2.2
+  saltine = doJailbreak super.saltine; # bytestring  && <0.12, deepseq <1.5, text > 1.2 && <1.3 || >=2.0 && <2.1
+  stripe-concepts = doJailbreak super.stripe-concepts; # text >=1.2.5 && <1.3 || >=2.0 && <2.1
+  stripe-signature = doJailbreak super.stripe-signature; # text >=1.2.5 && <1.3 || >=2.0 && <2.1
+  string-random = doJailbreak super.string-random; # text >=1.2.2.1 && <2.1
+  inflections = doJailbreak super.inflections; # text >=0.2 && <2.1
+  universe-some = doJailbreak super.universe-some; # th-abstraction < 0.7
 
   #
   # Test suite issues
@@ -106,6 +120,7 @@ self: super: {
   lifted-base = dontCheck super.lifted-base; # doesn't compile with transformers == 0.6.*
   hourglass = dontCheck super.hourglass; # umaintained, test suite doesn't compile anymore
   bsb-http-chunked = dontCheck super.bsb-http-chunked; # umaintained, test suite doesn't compile anymore
+  pcre-heavy = dontCheck super.pcre-heavy; # GHC warnings cause the tests to fail
 
   #
   # Other build fixes
@@ -122,10 +137,14 @@ self: super: {
       })
     super.libmpd;
 
-  # Symbol syntax seems to have changed in 9.8, removing a seemingly redundant colon; appears to be an overspecified assertion.
-  # https://github.com/wz1000/HieDb/issues/74
-  hiedb =
-    assert super.hiedb.version == "0.5.0.1";
-    dontCheck super.hiedb;
+  # Loosen bounds
+  patch = appendPatch (pkgs.fetchpatch {
+    url = "https://github.com/reflex-frp/patch/commit/91fed138483a7bf2b098d45b9e5cc36191776320.patch";
+    sha256 = "sha256-/KLfIshia88lU5G/hA7ild7+a2mqc7qgSa9AEBqEqkQ=";
+  }) super.patch;
+  reflex = appendPatch (pkgs.fetchpatch {
+    url = "https://github.com/reflex-frp/reflex/commit/0ac53ca3eab2649dd3f3edc585e10af8d13b28cd.patch";
+    sha256 = "sha256-umjwgdSKebJdRrXjwHhsi8HBqotx1vFibY9ttLkyT/0=";
+  }) super.reflex;
 
 }

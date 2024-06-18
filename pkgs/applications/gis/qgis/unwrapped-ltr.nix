@@ -3,7 +3,7 @@
 , makeWrapper
 , mkDerivation
 , substituteAll
-, wrapGAppsHook
+, wrapGAppsHook3
 , wrapQtAppsHook
 
 , withGrass ? true
@@ -77,14 +77,14 @@ let
     urllib3
   ];
 in mkDerivation rec {
-  version = "3.34.5";
+  version = "3.34.7";
   pname = "qgis-ltr-unwrapped";
 
   src = fetchFromGitHub {
     owner = "qgis";
     repo = "QGIS";
     rev = "final-${lib.replaceStrings [ "." ] [ "_" ] version}";
-    hash = "sha256-TRSS1YclGUfBjNz+Lo8U8YlN4kdJ9JLcwd7qpgwRbG0=";
+    hash = "sha256-6fIBmIoCVo0AtkjC4Vn3jMjz93gZmvkFAgo+KnasyXo=";
   };
 
   passthru = {
@@ -94,7 +94,7 @@ in mkDerivation rec {
 
   nativeBuildInputs = [
     makeWrapper
-    wrapGAppsHook
+    wrapGAppsHook3
     wrapQtAppsHook
 
     bison
@@ -180,7 +180,7 @@ in mkDerivation rec {
   '';
 
   meta = with lib; {
-    description = "A Free and Open Source Geographic Information System";
+    description = "Free and Open Source Geographic Information System";
     homepage = "https://www.qgis.org";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; teams.geospatial.members ++ [ lsix ];

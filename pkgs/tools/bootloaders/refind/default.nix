@@ -5,6 +5,7 @@
 , nixosTests
 , efibootmgr
 , openssl
+, withSbsigntool ? false # currently, cross compiling sbsigntool is broken, so default to false
 , sbsigntool
 , makeWrapper
 }:
@@ -23,16 +24,19 @@ in
 
 stdenv.mkDerivation rec {
   pname = "refind";
-  version = "0.14.0.2";
+  version = "0.14.2";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/refind/${version}/refind-src-${version}.tar.gz";
-    hash = "sha256-JqDFXf01ZUmeH4LY/ldGTb7xnKiGzm0BqBUii478iw8=";
+    hash = "sha256-99k86A2na4bFZygeoiW2qHkHzob/dyM8k1elIsEVyPA=";
   };
 
   patches = [
     # Removes hardcoded toolchain for aarch64, allowing successful aarch64 builds.
     ./0001-toolchain.patch
+    # Avoid leaking the build timestamp
+    # https://sourceforge.net/p/refind/code/merge-requests/53/
+    ./0002-preserve-dates.patch
   ];
 
   nativeBuildInputs = [ makeWrapper ];
@@ -48,6 +52,9 @@ stdenv.mkDerivation rec {
       "EFICRT0=${gnu-efi}/lib"
       "HOSTARCH=${hostarch}"
       "ARCH=${hostarch}"
+    ] ++ lib.optional stdenv.isAarch64 [
+      # aarch64 is special for GNU-EFI, see BUILDING.txt
+      "GNUEFI_ARM64_TARGET_SUPPORT=y"
     ];
 
   buildFlags = [ "gnuefi" "fs_gnuefi" ];
@@ -112,7 +119,7 @@ stdenv.mkDerivation rec {
 
   postInstall = ''
     wrapProgram $out/bin/refind-install \
-      --prefix PATH : ${lib.makeBinPath [ efibootmgr openssl sbsigntool ]}
+      --prefix PATH : ${lib.makeBinPath ( [ efibootmgr openssl ] ++ lib.optional withSbsigntool sbsigntool )}
     wrapProgram $out/bin/refind-mvrefind \
       --prefix PATH : ${lib.makeBinPath [ efibootmgr ]}
   '';
@@ -122,13 +129,13 @@ stdenv.mkDerivation rec {
   };
 
   meta = with lib; {
-    description = "A graphical {,U}EFI boot manager";
+    description = "Graphical {,U}EFI boot manager";
     longDescription = ''
       rEFInd is a graphical boot manager for EFI- and UEFI-based
       computers, such as all Intel-based Macs and recent (most 2011
       and later) PCs. rEFInd presents a boot menu showing all the EFI
       boot loaders on the EFI-accessible partitions, and optionally
-      BIOS-bootable partitions on Macs. EFI-compatbile OSes, including
+      BIOS-bootable partitions on Macs. EFI-compatible OSes, including
       Linux, provide boot loaders that rEFInd can detect and
       launch. rEFInd can launch Linux EFI boot loaders such as ELILO,
       GRUB Legacy, GRUB 2, and 3.3.0 and later kernels with EFI stub

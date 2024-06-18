@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "klipper";
-  version = "unstable-2024-03-19";
+  version = "0.12.0-unstable-2024-06-05";
 
   src = fetchFromGitHub {
     owner = "KevinOConnor";
     repo = "klipper";
-    rev = "235b75be3c287a9fdcde54b347734bf6a8de2ade";
-    sha256 = "sha256-PTdLhoKTlvrTljAvrK8q/JF9w50kKJHkWrzdPPaSfCc=";
+    rev = "49c0ad6369670da574f550aa878ce9f6e1899e74";
+    sha256 = "sha256-9kzOIv5FS0+FqgrMD2rtWoX1ZbidOfrh6pOalru8HWo=";
   };
 
   sourceRoot = "${src.name}/klippy";
@@ -63,10 +63,13 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  passthru.updateScript = unstableGitUpdater { url = meta.homepage; };
+  passthru.updateScript = unstableGitUpdater {
+    url = meta.homepage;
+    tagPrefix = "v";
+  };
 
   meta = with lib; {
-    description = "The Klipper 3D printer firmware";
+    description = "Klipper 3D printer firmware";
     mainProgram = "klippy";
     homepage = "https://github.com/KevinOConnor/klipper";
     maintainers = with maintainers; [ lovesegfault zhaofengli cab404 ];

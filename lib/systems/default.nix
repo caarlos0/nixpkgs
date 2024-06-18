@@ -27,7 +27,7 @@ let
   examples = import ./examples.nix { inherit lib; };
   architectures = import ./architectures.nix { inherit lib; };
 
-  /*
+  /**
     Elaborated systems contain functions, which means that they don't satisfy
     `==` for a lack of reflexivity.
 
@@ -45,10 +45,13 @@ let
     let removeFunctions = a: filterAttrs (_: v: !isFunction v) a;
     in a: b: removeFunctions a == removeFunctions b;
 
-  /* List of all Nix system doubles the nixpkgs flake will expose the package set
-     for. All systems listed here must be supported by nixpkgs as `localSystem`.
+  /**
+    List of all Nix system doubles the nixpkgs flake will expose the package set
+    for. All systems listed here must be supported by nixpkgs as `localSystem`.
 
-     **Warning**: This attribute is considered experimental and is subject to change.
+    :::{.warning}
+    This attribute is considered experimental and is subject to change.
+    :::
   */
   flakeExposed = import ./flake-systems.nix { };
 
@@ -78,6 +81,8 @@ let
         && final.parsed.kernel == platform.parsed.kernel;
       isCompatible = _: throw "2022-05-23: isCompatible has been removed in favor of canExecute, refer to the 22.11 changelog for details";
       # Derived meta-data
+      useLLVM = final.isFreeBSD;
+
       libc =
         /**/ if final.isDarwin              then "libSystem"
         else if final.isMinGW               then "msvcrt"
@@ -88,6 +93,7 @@ let
         else if final.isAndroid             then "bionic"
         else if final.isLinux /* default */ then "glibc"
         else if final.isFreeBSD             then "fblibc"
+        else if final.isOpenBSD             then "oblibc"
         else if final.isNetBSD              then "nblibc"
         else if final.isAvr                 then "avrlibc"
         else if final.isGhcjs               then null

@@ -91,13 +91,13 @@ self: super: {
 
     pg_relusage = super.callPackage ./pg_relusage.nix { };
 
+    pg_roaringbitmap = super.callPackage ./pg_roaringbitmap.nix { };
+
     pg_safeupdate = super.callPackage ./pg_safeupdate.nix { };
 
     pg_squeeze = super.callPackage ./pg_squeeze.nix { };
 
     pg_uuidv7 = super.callPackage ./pg_uuidv7.nix { };
-
-    promscale_extension = super.callPackage ./promscale_extension.nix { };
 
     repmgr = super.callPackage ./repmgr.nix { };
 

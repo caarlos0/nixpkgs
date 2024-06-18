@@ -326,11 +326,7 @@ rec {
     # the normalized name for macOS.
     macos    = { execFormat = macho;   families = { inherit darwin; }; name = "darwin"; };
     ios      = { execFormat = macho;   families = { inherit darwin; }; };
-    # A tricky thing about FreeBSD is that there is no stable ABI across
-    # versions. That means that putting in the version as part of the
-    # config string is paramount.
-    freebsd12 = { execFormat = elf;     families = { inherit bsd; }; name = "freebsd"; version = 12; };
-    freebsd13 = { execFormat = elf;     families = { inherit bsd; }; name = "freebsd"; version = 13; };
+    freebsd  = { execFormat = elf;     families = { inherit bsd; }; name = "freebsd"; };
     linux    = { execFormat = elf;     families = { }; };
     netbsd   = { execFormat = elf;     families = { inherit bsd; }; };
     none     = { execFormat = unknown; families = { }; };
@@ -473,6 +469,7 @@ rec {
               elem (elemAt l 2) [ "wasi" "redox" "mmixware" "ghcjs" "mingw32" ] ||
               hasPrefix "freebsd" (elemAt l 2) ||
               hasPrefix "netbsd" (elemAt l 2) ||
+              hasPrefix "openbsd" (elemAt l 2) ||
               hasPrefix "genode" (elemAt l 2)
       then {
         cpu    = elemAt l 0;

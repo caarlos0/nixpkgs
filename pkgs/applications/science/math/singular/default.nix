@@ -13,12 +13,9 @@
 , doxygen
 , graphviz
 , latex2html
-# upstream generates docs with texinfo 4. later versions of texinfo
-# use letters instead of numbers for post-appendix chapters, and we
-# want it to match the upstream format because sage depends on it.
-, texinfo4
+, texinfo
 , texliveSmall
-, enableDocs ? true
+, enableDocs ? !stdenv.isDarwin
 , enableGfanlib ? true
 }:
 
@@ -85,7 +82,7 @@ stdenv.mkDerivation rec {
     doxygen
     graphviz
     latex2html
-    texinfo4
+    texinfo
     texliveSmall
   ] ++ lib.optionals stdenv.isDarwin [ getconf ];
   depsBuildBuild = [ buildPackages.stdenv.cc ];
@@ -159,7 +156,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = with lib; {
-    description = "A CAS for polynomial computations";
+    description = "CAS for polynomial computations";
     maintainers = teams.sage.members;
     # 32 bit x86 fails with some link error: `undefined reference to `__divmoddi4@GCC_7.0.0'`
     # https://www.singular.uni-kl.de:8002/trac/ticket/837

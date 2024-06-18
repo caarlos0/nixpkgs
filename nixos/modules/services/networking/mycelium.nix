@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, utils, ... }:
 
 let
   cfg = config.services.mycelium;
@@ -46,10 +46,21 @@ in
         Adds the hosted peers from https://github.com/threefoldtech/mycelium#hosted-public-nodes.
       '';
     };
+    extraArgs = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = ''
+        Extra command-line arguments to pass to mycelium.
+
+        See `mycelium --help` for all available options.
+      '';
+    };
   };
   config = lib.mkIf cfg.enable {
     networking.firewall.allowedTCPPorts = lib.optionals cfg.openFirewall [ 9651 ];
     networking.firewall.allowedUDPPorts = lib.optionals cfg.openFirewall [ 9650 9651 ];
+
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services.mycelium = {
       description = "Mycelium network";
@@ -87,6 +98,7 @@ in
           )
           "--tun-name"
           "mycelium"
+          "${utils.escapeSystemdExecArgs cfg.extraArgs}"
         ] ++
         (lib.optional (cfg.addHostedPublicNodes || cfg.peers != [ ]) "--peers")
         ++ cfg.peers ++ (lib.optionals cfg.addHostedPublicNodes [
@@ -130,4 +142,3 @@ in
     maintainers = with lib.maintainers; [ flokli lassulus ];
   };
 }
-

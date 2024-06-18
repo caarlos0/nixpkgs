@@ -1,7 +1,6 @@
 { mkDerivation
 , lib
 , fetchFromGitHub
-, fetchpatch
 
 , anthy
 , hunspell
@@ -17,7 +16,7 @@
 
 , cmake
 , pkg-config
-, wrapGAppsHook
+, wrapGAppsHook3
 }:
 
 mkDerivation rec {
@@ -58,7 +57,7 @@ mkDerivation rec {
   nativeBuildInputs = [
     cmake
     pkg-config
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   postInstall = ''

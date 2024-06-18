@@ -200,6 +200,24 @@ in {
   and = x: y: x && y;
 
   /**
+    boolean “exclusive or”
+
+
+    # Inputs
+
+    `x`
+
+    : 1\. Function argument
+
+    `y`
+
+    : 2\. Function argument
+  */
+  # We explicitly invert the arguments purely as a type assertion.
+  # This is invariant under XOR, so it does not affect the result.
+  xor = x: y: (!x) != (!y);
+
+  /**
     bitwise “not”
   */
   bitNot = builtins.sub (-1);
@@ -385,7 +403,7 @@ in {
     On each release the first letter is bumped and a new animal is chosen
     starting with that new letter.
   */
-  codeName = "Uakari";
+  codeName = "Vicuna";
 
   /**
     Returns the current nixpkgs version suffix as string.
@@ -605,6 +623,37 @@ in {
   /**
     Reads a JSON file.
 
+    # Examples
+    :::{.example}
+    ## `lib.trivial.importJSON` usage example
+
+    example.json
+    ```json
+    {
+      "title": "Example JSON",
+      "hello": {
+        "world": "foo",
+        "bar": {
+          "foobar": true
+        }
+      }
+    }
+    ```
+
+    ```nix
+    importJSON ./example.json
+    => {
+      title = "Example JSON";
+      hello = {
+        world = "foo";
+        bar = {
+          foobar = true;
+        };
+      };
+    }
+    ```
+
+    :::
 
     # Inputs
 
@@ -624,6 +673,35 @@ in {
   /**
     Reads a TOML file.
 
+    # Examples
+    :::{.example}
+    ## `lib.trivial.importTOML` usage example
+
+    example.toml
+    ```toml
+    title = "TOML Example"
+
+    [hello]
+    world = "foo"
+
+    [hello.bar]
+    foobar = true
+    ```
+
+    ```nix
+    importTOML ./example.toml
+    => {
+      title = "TOML Example";
+      hello = {
+        world = "foo";
+        bar = {
+          foobar = true;
+        };
+      };
+    }
+    ```
+
+    :::
 
     # Inputs
 

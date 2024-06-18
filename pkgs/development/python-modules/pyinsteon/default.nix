@@ -1,42 +1,41 @@
-{ lib
-, aiofiles
-, aiohttp
-, async-generator
-, buildPythonPackage
-, fetchFromGitHub
-, pypubsub
-, pyserial
-, pyserial-asyncio
-, pytestCheckHook
-, pythonAtLeast
-, pythonOlder
-, setuptools
-, voluptuous
-, wheel
+{
+  lib,
+  aiofiles,
+  aiohttp,
+  async-timeout,
+  async-generator,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pypubsub,
+  pyserial,
+  pyserial-asyncio,
+  pytestCheckHook,
+  pythonAtLeast,
+  pythonOlder,
+  setuptools,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
   pname = "pyinsteon";
-  version = "1.5.3";
-  format = "pyproject";
+  version = "1.6.2";
+  pyproject = true;
 
   disabled = pythonOlder "3.8";
 
   src = fetchFromGitHub {
-    owner = pname;
-    repo = pname;
+    owner = "pyinsteon";
+    repo = "pyinsteon";
     rev = "refs/tags/${version}";
-    hash = "sha256-9d6QbekUv63sjKdK+ZogYOkGfFXVW+JB6ITHnehLwtM=";
+    hash = "sha256-V1sYLKKlTMG9Km53uNCU34e8D/owxuDNT+HGZxtK21I=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-    wheel
-  ];
+  build-system = [ setuptools ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     aiofiles
     aiohttp
+    async-timeout
     pypubsub
     pyserial
     pyserial-asyncio
@@ -48,29 +47,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  disabledTests = lib.optionals (pythonAtLeast "3.12") [
-    # AssertionError: Failed test 'read_eeprom_response' with argument 'group' value X vs expected value Z
-    "test_async_send"
-    "test_nak_response"
-    "test_no_direct_ack"
-    "test_on_level"
-    "test_on_level_group"
-    "test_on_level_nak"
-    # AssertionError: Failed test 'read_eeprom_response' with argument 'target' value X vs expected value Y
-    "test_other_status"
-    "test_status_command"
-    "test_status_request_hub"
-    # stuck in epoll
-    "test_read_all_peek"
+  disabledTests = [
+    # RuntimeError: BUG: Dead Listener called, still subscribed!
+    "test_linking_with_i1_device"
   ];
 
-  pythonImportsCheck = [
-    "pyinsteon"
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
+    # Tests are blocking or failing
+    "tests/test_handlers/"
   ];
+
+  pythonImportsCheck = [ "pyinsteon" ];
 
   meta = with lib; {
     description = "Python library to support Insteon home automation projects";
-    mainProgram = "insteon_tools";
     longDescription = ''
       This is a Python package to interface with an Insteon Modem. It has been
       tested to work with most USB or RS-232 serial based devices such as the
@@ -80,5 +70,6 @@ buildPythonPackage rec {
     changelog = "https://github.com/pyinsteon/pyinsteon/releases/tag/${version}";
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ fab ];
+    mainProgram = "insteon_tools";
   };
 }

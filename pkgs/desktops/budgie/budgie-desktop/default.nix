@@ -33,7 +33,7 @@
 , upower
 , vala
 , xfce
-, wrapGAppsHook
+, wrapGAppsHook3
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -81,7 +81,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
     vala
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -123,7 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    description = "A feature-rich, modern desktop designed to keep out the way of the user";
+    description = "Feature-rich, modern desktop designed to keep out the way of the user";
     homepage = "https://github.com/BuddiesOfBudgie/budgie-desktop";
     license = with lib.licenses; [ gpl2Plus lgpl21Plus cc-by-sa-30 ];
     platforms = lib.platforms.linux;

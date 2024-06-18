@@ -1,16 +1,18 @@
-{ lib
-, argcomplete
-, buildPythonPackage
-, fetchFromGitHub
-, hatchling
-, hatch-vcs
-, packaging
-, platformdirs
-, pytestCheckHook
-, pythonOlder
-, tomli
-, userpath
-, git
+{
+  lib,
+  argcomplete,
+  buildPythonPackage,
+  fetchFromGitHub,
+  hatchling,
+  hatch-vcs,
+  installShellFiles,
+  packaging,
+  platformdirs,
+  pytestCheckHook,
+  pythonOlder,
+  tomli,
+  userpath,
+  git,
 }:
 
 buildPythonPackage rec {
@@ -37,9 +39,9 @@ buildPythonPackage rec {
     packaging
     platformdirs
     userpath
-  ] ++ lib.optionals (pythonOlder "3.11") [
-    tomli
-  ];
+  ] ++ lib.optionals (pythonOlder "3.11") [ tomli ];
+
+  nativeBuildInputs = [ installShellFiles ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -78,6 +80,13 @@ buildPythonPackage rec {
     "test_list_short"
     "test_skip_maintenance"
   ];
+
+  postInstall = ''
+    installShellCompletion --cmd pipx \
+      --bash <(${argcomplete}/bin/register-python-argcomplete pipx --shell bash) \
+      --zsh <(${argcomplete}/bin/register-python-argcomplete pipx --shell zsh) \
+      --fish <(${argcomplete}/bin/register-python-argcomplete pipx --shell fish)
+  '';
 
   meta = with lib; {
     description = "Install and run Python applications in isolated environments";

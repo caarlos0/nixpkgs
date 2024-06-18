@@ -45,12 +45,6 @@ buildGoModule rec {
     inherit hash;
   };
 
-  # replace with env var > 0.6 https://github.com/lxc/incus/pull/610
-  postPatch = ''
-    substituteInPlace internal/usbid/load.go \
-      --replace-fail "/usr/share/misc/usb.ids" "${hwdata}/share/hwdata/usb.ids"
-  '';
-
   excludedPackages = [
     # statically compile these
     "cmd/incus-agent"
@@ -87,7 +81,8 @@ buildGoModule rec {
     make incus-agent incus-migrate
   '';
 
-  preCheck =
+  # Disable tests requiring local operations
+  checkFlags =
     let
       skippedTests = [
         "TestValidateConfig"
@@ -97,16 +92,11 @@ buildGoModule rec {
         "TestContainerTestSuite"
       ];
     in
-    ''
-      # Disable tests requiring local operations
-      buildFlagsArray+=("-run" "[^(${builtins.concatStringsSep "|" skippedTests})]")
-    '';
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   postInstall = ''
-    # use custom bash completion as it has extra logic for e.g. instance names
-    installShellCompletion --bash --name incus ./scripts/bash/incus
-
     installShellCompletion --cmd incus \
+      --bash <($out/bin/incus completion bash) \
       --fish <($out/bin/incus completion fish) \
       --zsh <($out/bin/incus completion zsh)
   '';
@@ -123,7 +113,7 @@ buildGoModule rec {
         ;
     };
 
-    tests = nixosTests.incus;
+    tests = if lts then nixosTests.incus-lts else nixosTests.incus;
 
     ui = callPackage ./ui.nix { };
 

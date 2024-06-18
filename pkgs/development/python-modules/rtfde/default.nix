@@ -1,12 +1,13 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, lark
-, lxml
-, oletools
-, pytestCheckHook
-, pythonOlder
-, setuptools
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  lark,
+  lxml,
+  oletools,
+  pytestCheckHook,
+  pythonOlder,
+  setuptools,
 }:
 
 buildPythonPackage rec {
@@ -23,11 +24,15 @@ buildPythonPackage rec {
     hash = "sha256-ai9JQ3gphY/IievBNdHiblIpc0IPS9wp7CVvBIRzG/4=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  postPatch = ''
+    # https://github.com/seamustuohy/RTFDE/issues/31
+    substituteInPlace setup.py \
+      --replace-fail "==" ">="
+  '';
 
-  propagatedBuildInputs = [
+  build-system = [ setuptools ];
+
+  dependencies = [
     lark
     oletools
   ];
@@ -37,9 +42,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "RTFDE"
-  ];
+  pythonImportsCheck = [ "RTFDE" ];
 
   meta = with lib; {
     description = "Library for extracting encapsulated HTML and plain text content from the RTF bodies";

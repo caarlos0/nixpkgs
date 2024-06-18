@@ -42,7 +42,7 @@
 , swig4
 , python
 , wxPython
-, opencascade-occt
+, opencascade-occt_7_6
 , libngspice
 , valgrind
 
@@ -65,6 +65,7 @@ assert testing -> !stable
   -> throw "testing implies stable and cannot be used with stable = false";
 
 let
+  opencascade-occt = opencascade-occt_7_6;
   inherit (lib) optional optionals optionalString;
 in
 stdenv.mkDerivation rec {
@@ -204,7 +205,7 @@ stdenv.mkDerivation rec {
       Just the build products, the libraries are passed via an env var in the wrapper, default.nix
     '';
     homepage = "https://www.kicad.org/";
-    license = lib.licenses.agpl3Plus;
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.all;
   };
 }

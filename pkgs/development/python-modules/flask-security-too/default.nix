@@ -1,53 +1,54 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, pythonOlder
-, setuptools
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  pythonOlder,
+  setuptools,
 
-# extras: babel
-, babel
-, flask-babel
+  # extras: babel
+  babel,
+  flask-babel,
 
-# extras: common
-, bcrypt
-, bleach
-, flask-mailman
+  # extras: common
+  bcrypt,
+  bleach,
+  flask-mailman,
 
-# extras: fsqla
-, flask-sqlalchemy
-, sqlalchemy
-, sqlalchemy-utils
+  # extras: fsqla
+  flask-sqlalchemy,
+  sqlalchemy,
+  sqlalchemy-utils,
 
-# extras: mfa
-, cryptography
-, phonenumbers
-, webauthn
-, qrcode
+  # extras: mfa
+  cryptography,
+  phonenumbers,
+  webauthn,
+  qrcode,
 
-# propagates
-, email-validator
-, flask
-, flask-login
-, flask-principal
-, flask-wtf
-, passlib
-, importlib-resources
-, wtforms
+  # propagates
+  email-validator,
+  flask,
+  flask-login,
+  flask-principal,
+  flask-wtf,
+  passlib,
+  importlib-resources,
+  wtforms,
 
-# tests
-, argon2-cffi
-, freezegun
-, mongoengine
-, mongomock
-, peewee
-, pony
-, pytestCheckHook
-, zxcvbn
+  # tests
+  argon2-cffi,
+  freezegun,
+  mongoengine,
+  mongomock,
+  peewee,
+  pony,
+  pytestCheckHook,
+  zxcvbn,
 }:
 
 buildPythonPackage rec {
   pname = "flask-security-too";
-  version = "5.4.2";
+  version = "5.4.3";
   pyproject = true;
 
   disabled = pythonOlder "3.7";
@@ -55,12 +56,10 @@ buildPythonPackage rec {
   src = fetchPypi {
     pname = "Flask-Security-Too";
     inherit version;
-    hash = "sha256-dzVHHC5Lsh6rUC+cOyNEe/uHVTzkObhFffgSvFOfKoI=";
+    hash = "sha256-YrGTl+jXGo1MuNwNRAnMehSXmCVJAwOWlgruUYdV5YM=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
   propagatedBuildInputs = [
     email-validator
@@ -96,31 +95,29 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    argon2-cffi
-    freezegun
-    mongoengine
-    mongomock
-    peewee
-    pony
-    pytestCheckHook
-    zxcvbn
-    freezegun
-  ]
-  ++ passthru.optional-dependencies.babel
-  ++ passthru.optional-dependencies.common
-  ++ passthru.optional-dependencies.fsqla
-  ++ passthru.optional-dependencies.mfa;
-
+  nativeCheckInputs =
+    [
+      argon2-cffi
+      freezegun
+      mongoengine
+      mongomock
+      peewee
+      pony
+      pytestCheckHook
+      zxcvbn
+      freezegun
+    ]
+    ++ passthru.optional-dependencies.babel
+    ++ passthru.optional-dependencies.common
+    ++ passthru.optional-dependencies.fsqla
+    ++ passthru.optional-dependencies.mfa;
 
   disabledTests = [
     # needs /etc/resolv.conf
     "test_login_email_whatever"
   ];
 
-  pythonImportsCheck = [
-    "flask_security"
-  ];
+  pythonImportsCheck = [ "flask_security" ];
 
   meta = with lib; {
     changelog = "https://github.com/Flask-Middleware/flask-security/blob/${version}/CHANGES.rst";

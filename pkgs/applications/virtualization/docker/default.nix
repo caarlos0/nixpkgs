@@ -1,4 +1,4 @@
-{ lib, callPackage, fetchFromGitHub }:
+{ lib, callPackage }:
 
 rec {
   dockerGen = {
@@ -265,14 +265,14 @@ rec {
 
     meta = with lib; {
       homepage = "https://www.docker.com/";
-      description = "An open source project to pack, ship and run any application as a lightweight container";
+      description = "Open source project to pack, ship and run any application as a lightweight container";
       longDescription = ''
         Docker is a platform designed to help developers build, share, and run modern applications.
 
         To enable the docker daemon on NixOS, set the `virtualisation.docker.enable` option to `true`.
       '';
       license = licenses.asl20;
-      maintainers = with maintainers; [ offline vdemeester periklis ];
+      maintainers = with maintainers; [ offline vdemeester periklis teutat3s ];
       mainProgram = "docker";
     };
   });
@@ -280,25 +280,11 @@ rec {
   # Get revisions from
   # https://github.com/moby/moby/tree/${version}/hack/dockerfile/install/*
   docker_24 = callPackage dockerGen rec {
-    version = "24.0.5";
+    version = "24.0.9";
     cliRev = "v${version}";
-    cliHash = "sha256-u1quVGTx/p8BDyRn33vYyyuE5BOhWMnGQ5uVX0PZ5mg=";
+    cliHash = "sha256-nXIZtE0X1OoQT908IGuRhVHb0tiLbqQLP0Md3YWt0/Q=";
     mobyRev = "v${version}";
-    mobyHash = "sha256-JQjRz1fHZlQRkNw/R8WWLV8caN3/U3mrKKQXbZt2crU=";
-    runcRev = "v1.1.8";
-    runcHash = "sha256-rDJYEc64KW4Qa3Eg2oUjJqIKrg6THb5hxQFFbvb9Zp4=";
-    containerdRev = "v1.7.1";
-    containerdHash = "sha256-WwedtcsrDQwMQcKFO5nnPiHyGJpl5hXZlmpbBe1/ftY=";
-    tiniRev = "v0.19.0";
-    tiniHash = "sha256-ZDKu/8yE5G0RYFJdhgmCdN3obJNyRWv6K/Gd17zc1sI=";
-  };
-
-  docker_25 = callPackage dockerGen rec {
-    version = "25.0.3";
-    cliRev = "v${version}";
-    cliHash = "sha256-Jvb0plV1O/UzrcpzN4zH5OulmTVF+p9UQQQ9xqkiObQ=";
-    mobyRev = "v${version}";
-    mobyHash = "sha256-cDlRVdQNzH/X2SJUYHK1QLUHlKQtSyRYCVbz3wPx1ZM=";
+    mobyHash = "sha256-KRS99heyMAPBnjjr7If8TOlJf6v6866S7J3YGkOhFiA=";
     runcRev = "v1.1.12";
     runcHash = "sha256-N77CU5XiGYIdwQNPFyluXjseTeaYuNJ//OsEUS0g/v0=";
     containerdRev = "v1.7.13";
@@ -306,4 +292,33 @@ rec {
     tiniRev = "v0.19.0";
     tiniHash = "sha256-ZDKu/8yE5G0RYFJdhgmCdN3obJNyRWv6K/Gd17zc1sI=";
   };
+
+  docker_25 = callPackage dockerGen rec {
+    version = "25.0.5";
+    cliRev = "v${version}";
+    cliHash = "sha256-CACMi3bXUN6oGc2f/Z+lNQqMgQ4llRWPRKgijdpiPGg=";
+    mobyRev = "v${version}";
+    mobyHash = "sha256-4QGz22fXxyAD77pyUWb2lF3VKqxmPIrGqcJGoyrEHew=";
+    runcRev = "v1.1.12";
+    runcHash = "sha256-N77CU5XiGYIdwQNPFyluXjseTeaYuNJ//OsEUS0g/v0=";
+    containerdRev = "v1.7.13";
+    containerdHash = "sha256-y3CYDZbA2QjIn1vyq/p1F1pAVxQHi/0a6hGWZCRWzyk=";
+    tiniRev = "v0.19.0";
+    tiniHash = "sha256-ZDKu/8yE5G0RYFJdhgmCdN3obJNyRWv6K/Gd17zc1sI=";
+  };
+
+  docker_26 = callPackage dockerGen rec {
+    version = "26.1.4";
+    cliRev = "v${version}";
+    cliHash = "sha256-7yCR49Un1i1kB+66IKt/8lgwKNkUjtVh52DH9OY8Pw4=";
+    mobyRev = "v${version}";
+    mobyHash = "sha256-0WwlpUECvmNq6DBm7U7rjzYfGKF7pxsfs9+x5uVPV0k=";
+    runcRev = "v1.1.12";
+    runcHash = "sha256-N77CU5XiGYIdwQNPFyluXjseTeaYuNJ//OsEUS0g/v0=";
+    containerdRev = "v1.7.15";
+    containerdHash = "sha256-qLrPLGxsUmgEscrhyl+1rJ0k7c9ibKnpMpsJPD4xDZU=";
+    tiniRev = "v0.19.0";
+    tiniHash = "sha256-ZDKu/8yE5G0RYFJdhgmCdN3obJNyRWv6K/Gd17zc1sI=";
+  };
+
 }

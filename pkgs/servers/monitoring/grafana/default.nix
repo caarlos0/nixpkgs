@@ -2,7 +2,8 @@
 , tzdata, wire
 , yarn, nodejs, python3, cacert
 , jq, moreutils
-, nix-update-script, nixosTests
+, nix-update-script, nixosTests, xcbuild
+, util-linux
 }:
 
 let
@@ -21,7 +22,7 @@ let
 in
 buildGoModule rec {
   pname = "grafana";
-  version = "10.4.0";
+  version = "11.0.0";
 
   subPackages = [ "pkg/cmd/grafana" "pkg/cmd/grafana-server" "pkg/cmd/grafana-cli" ];
 
@@ -29,16 +30,24 @@ buildGoModule rec {
     owner = "grafana";
     repo = "grafana";
     rev = "v${version}";
-    hash = "sha256-Rp2jGspbmqJFzSbiVy2/5oqQJnAdGG/T+VNBHVsHSwg=";
+    hash = "sha256-cC1dpgb8IiyPIqlVvn8Qi1l7j6lLtQF+BOOO+DQCp4E=";
+  };
+
+  # borrowed from: https://github.com/NixOS/nixpkgs/blob/d70d9425f49f9aba3c49e2c389fe6d42bac8c5b0/pkgs/development/tools/analysis/snyk/default.nix#L20-L22
+  env = lib.optionalAttrs (stdenv.isDarwin && stdenv.isx86_64) {
+    # Fix error: no member named 'aligned_alloc' in the global namespace.
+    # Occurs while building @esfx/equatable@npm:1.0.2 on x86_64-darwin
+    NIX_CFLAGS_COMPILE = "-D_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION=1";
   };
 
   offlineCache = stdenv.mkDerivation {
     name = "${pname}-${version}-yarn-offline-cache";
-    inherit src;
+    inherit src env;
     nativeBuildInputs = [
       yarn nodejs cacert
       jq moreutils python3
-    ];
+    # @esfx/equatable@npm:1.0.2 fails to build on darwin as it requires `xcbuild`
+    ] ++ lib.optionals stdenv.isDarwin [ xcbuild.xcbuild ];
     postPatch = ''
       ${patchAwayGrafanaE2E}
     '';
@@ -47,7 +56,7 @@ buildGoModule rec {
       export HOME="$(mktemp -d)"
       yarn config set enableTelemetry 0
       yarn config set cacheFolder $out
-      yarn config set --json supportedArchitectures.os '[ "linux" ]'
+      yarn config set --json supportedArchitectures.os '[ "linux", "darwin" ]'
       yarn config set --json supportedArchitectures.cpu '["arm", "arm64", "ia32", "x64"]'
       yarn
       runHook postBuild
@@ -56,14 +65,21 @@ buildGoModule rec {
     dontInstall = true;
     dontFixup = true;
     outputHashMode = "recursive";
-    outputHash = "sha256-QdyXSPshzugkDTJoUrJlHNuhPAyR9gae5Cbk8Q8FSl4=";
+    outputHash = rec {
+      x86_64-linux = "sha256-+Udq8oQSIAHku55VKnrfgHHevzBels0QiOZwnwuts8k=";
+      aarch64-linux = x86_64-linux;
+      aarch64-darwin = "sha256-m3jtZNz0J2nZwFHXVp3ApgDfnGBOJvFeUpqOPQqv200=";
+      x86_64-darwin = aarch64-darwin;
+    }.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
   disallowedRequisites = [ offlineCache ];
 
-  vendorHash = "sha256-cNkMVLXp3hPMcW0ilOM0VlrrDX/IsZaze+/6qlTfmRs=";
+  vendorHash = "sha256-kcdW6RQghyAOZUDmIo9G6YBC+YaLHdafvj+fCd+dcDE=";
 
-  nativeBuildInputs = [ wire yarn jq moreutils removeReferencesTo python3 ];
+  proxyVendor = true;
+
+  nativeBuildInputs = [ wire yarn jq moreutils removeReferencesTo python3 ] ++ lib.optionals stdenv.isDarwin [ xcbuild.xcbuild ];
 
   postPatch = ''
     ${patchAwayGrafanaE2E}
@@ -75,7 +91,6 @@ buildGoModule rec {
     wire gen -tags oss ./pkg/server
     wire gen -tags oss ./pkg/cmd/grafana-cli/runner
 
-    GOARCH= CGO_ENABLED=0 go generate ./pkg/plugins/plugindef
     GOARCH= CGO_ENABLED=0 go generate ./kinds/gen.go
     GOARCH= CGO_ENABLED=0 go generate ./public/app/plugins/gen.go
     # Setup node_modules
@@ -90,7 +105,7 @@ buildGoModule rec {
 
     yarn config set enableTelemetry 0
     yarn config set cacheFolder $offlineCache
-    yarn --immutable-cache
+    yarn install --immutable-cache
 
     # The build OOMs on memory constrained aarch64 without this
     export NODE_OPTIONS=--max_old_space_size=4096
@@ -98,7 +113,9 @@ buildGoModule rec {
 
   postBuild = ''
     # After having built all the Go code, run the JS builders now.
-    yarn run build
+
+    # Workaround for https://github.com/nrwl/nx/issues/22445
+    ${util-linux}/bin/script -c 'yarn run build' /dev/null
     yarn run plugins:build-bundled
   '';
 
@@ -137,7 +154,10 @@ buildGoModule rec {
     license = licenses.agpl3Only;
     homepage = "https://grafana.com";
     maintainers = with maintainers; [ offline fpletz willibutz globin ma27 Frostman ];
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
     mainProgram = "grafana-server";
+    # requires util-linux to work around https://github.com/nrwl/nx/issues/22445
+    # `script` doesn't seem to be part of util-linux on Darwin though.
+    broken = stdenv.isDarwin;
   };
 }

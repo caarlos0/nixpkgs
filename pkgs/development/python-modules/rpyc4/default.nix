@@ -1,20 +1,21 @@
-{ lib
-, stdenv
-, buildPythonPackage
-, fetchFromGitHub
-, setuptools
-, hatchling
-, plumbum
-, pytestCheckHook
-, pythonOlder
-, pythonAtLeast
+{
+  lib,
+  stdenv,
+  buildPythonPackage,
+  fetchFromGitHub,
+  setuptools,
+  hatchling,
+  plumbum,
+  pytestCheckHook,
+  pythonOlder,
+  pythonAtLeast,
 }:
 
 buildPythonPackage rec {
   pname = "rpyc4";
   # Pinned version for linien, see also:
   # https://github.com/linien-org/pyrp3/pull/10#discussion_r1302816237
-  version = "6.0.0";
+  version = "4.1.5";
   format = "pyproject";
 
   # Since this is an outdated version, upstream might have fixed the
@@ -24,8 +25,8 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "tomerfiliba";
     repo = "rpyc";
-    rev = "refs/tags/${version}";
-    hash = "sha256-BvXEXZlVbOmKBwnSBCDksUkbT7JPcMX48KZe/Gd5Y8Q=";
+    rev = version;
+    hash = "sha256-8NOcXZDR3w0TNj1+LZ7lzQAt7yDgspjOp2zk1bsbVls=";
   };
 
   nativeBuildInputs = [
@@ -33,13 +34,9 @@ buildPythonPackage rec {
     hatchling
   ];
 
-  propagatedBuildInputs = [
-    plumbum
-  ];
+  propagatedBuildInputs = [ plumbum ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Disable tests that requires network access
@@ -58,9 +55,7 @@ buildPythonPackage rec {
     "tests/test_teleportation.py"
   ];
 
-  pythonImportsCheck = [
-    "rpyc"
-  ];
+  pythonImportsCheck = [ "rpyc" ];
 
   doCheck = !stdenv.isDarwin;
 
