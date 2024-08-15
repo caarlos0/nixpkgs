@@ -79,6 +79,10 @@ self: super: ({
 
   proteaaudio = addExtraLibrary darwin.apple_sdk.frameworks.AudioToolbox super.proteaaudio;
 
+  # issues finding libcharset.h without libiconv in buildInputs on darwin.
+  with-utf8 = addExtraLibrary pkgs.libiconv super.with-utf8;
+  with-utf8_1_1_0_0 = addExtraLibrary pkgs.libiconv super.with-utf8_1_1_0_0;
+
   # the system-fileio tests use canonicalizePath, which fails in the sandbox
   system-fileio = dontCheck super.system-fileio;
 
@@ -323,13 +327,29 @@ self: super: ({
   # Tests fail on macOS https://github.com/mrkkrp/zip/issues/112
   zip = dontCheck super.zip;
 
+  warp = super.warp.overrideAttrs (drv: {
+    __darwinAllowLocalNetworking = true;
+  });
+
+  ghcjs-dom-hello = overrideCabal (drv: {
+    libraryHaskellDepends = with self; [ jsaddle jsaddle-warp ];
+    executableHaskellDepends = with self; [ ghcjs-dom jsaddle-wkwebview ];
+  }) super.ghcjs-dom-hello;
+
+  jsaddle-hello = overrideCabal (drv: {
+    libraryHaskellDepends = with self; [ jsaddle lens ];
+    executableHaskellDepends = with self; [ jsaddle-warp jsaddle-wkwebview ];
+  }) super.jsaddle-hello;
+
   jsaddle-wkwebview = overrideCabal (drv: {
     libraryFrameworkDepends = with pkgs.buildPackages.darwin.apple_sdk.frameworks; [ Cocoa WebKit ];
     libraryHaskellDepends = with self; [ aeson data-default jsaddle ]; # cabal2nix doesn't add darwin-only deps
   }) super.jsaddle-wkwebview;
-  reflex-dom = overrideCabal (drv: {
-    libraryHaskellDepends = with self; [ base bytestring jsaddle-wkwebview reflex reflex-dom-core text ]; # cabal2nix doesn't add darwin-only deps
-  }) super.reflex-dom;
+
+  # cabal2nix doesn't add darwin-only deps
+  reflex-dom = addBuildDepend self.jsaddle-wkwebview (super.reflex-dom.override (drv: {
+    jsaddle-webkit2gtk = null;
+  }));
 
   # Remove a problematic assert, the length is sometimes 1 instead of 2 on darwin
   di-core = overrideCabal (drv: {

@@ -8,14 +8,13 @@
   pyopenssl,
   python-dateutil,
   pythonOlder,
-  pythonRelaxDepsHook,
   pytz,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "oci";
-  version = "2.128.1";
+  version = "2.128.2";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
@@ -24,7 +23,7 @@ buildPythonPackage rec {
     owner = "oracle";
     repo = "oci-python-sdk";
     rev = "refs/tags/v${version}";
-    hash = "sha256-Df8DwzB/pOyixBS5dx9MeBa8IsZw/8q1Dk8itmsHGSM=";
+    hash = "sha256-AT4jE4apkZ0uK1Z03nVnMN9CS5uiMwPNsarq7pY+Pnw=";
   };
 
   pythonRelaxDeps = [
@@ -33,7 +32,6 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [
-    pythonRelaxDepsHook
     setuptools
   ];
 
